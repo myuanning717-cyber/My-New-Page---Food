@@ -1,0 +1,314 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: rgb(232, 234, 246);
+    margin: 0;
+    padding: 40px 20px;
+    font-family: 'Poppins', sans-serif;
+    color: rgb(48, 50, 75);
+}
+
+header {
+    max-width: 900px;
+    margin: 0 auto 24px;
+}
+
+nav {
+    background-color: rgb(248, 249, 255);
+    border: 2px solid rgb(95, 98, 130);
+    border-radius: 18px;
+    box-shadow: 0 8px 18px rgba(72, 76, 112, 0.12);
+    padding: 12px 20px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 34px;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    display: inline-block;
+    color: rgb(64, 60, 105);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 4px 6px;
+    transition: all 0.3s ease;
+}
+
+nav a:hover,
+nav a:focus {
+    color: rgb(150, 130, 220);
+    border-bottom-color: rgb(150, 130, 220);
+    text-shadow: 0 0 10px rgba(140, 120, 210, 0.4);
+}
+
+main,
+.main {
+    width: 100%;
+}
+
+.main {
+    text-align: center;
+    max-width: 900px;
+    border: 2px solid rgb(95, 98, 130);
+    margin: 0 auto;
+    background-color: rgb(248, 249, 255);
+    border-radius: 18px;
+    box-shadow: 0 10px 24px rgba(72, 76, 112, 0.15);
+    overflow: hidden;
+}
+
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3em;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin: 40px 20px;
+    background: linear-gradient(90deg, rgb(90, 75, 160), rgb(130, 110, 190), rgb(80, 140, 190));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 18px rgba(120, 100, 200, 0.35);
+}
+
+.content-bg {
+    background-color: rgb(226, 229, 244);
+    padding: 40px 35px;
+}
+
+h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: rgb(64, 60, 105);
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.4em;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgb(78, 74, 122);
+    margin-top: 30px;
+    margin-bottom: 18px;
+}
+
+p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    line-height: 1.9;
+    color: rgb(48, 50, 75);
+    margin: 14px 0;
+}
+
+a {
+    font-weight: 700;
+    color: rgb(80, 70, 145);
+    text-decoration: none;
+    border-bottom: 2px solid rgba(120, 110, 190, 0.5);
+    padding-bottom: 2px;
+    transition: all 0.3s ease;
+}
+
+a:hover,
+a:focus {
+    color: rgb(150, 130, 220);
+    border-bottom-color: rgb(150, 130, 220);
+    text-shadow: 0 0 10px rgba(140, 120, 210, 0.5);
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 22px auto;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(72, 76, 112, 0.18);
+}
+
+.project-list {
+    max-width: 650px;
+    margin: 28px auto 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    text-align: left;
+}
+
+.project-list li {
+    background-color: rgb(248, 249, 255);
+    border: 1px solid rgba(95, 98, 130, 0.45);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: rgb(64, 60, 105);
+    font-weight: 600;
+    box-shadow: 0 5px 12px rgba(72, 76, 112, 0.08);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 12px 28px;
+    border: 2px solid rgb(95, 98, 130);
+    border-radius: 30px;
+    background-color: rgb(248, 249, 255);
+    color: rgb(60, 56, 110);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.back-link:hover,
+.back-link:focus {
+    background-color: rgb(95, 98, 130);
+    color: white;
+    box-shadow: 0 0 18px rgba(120, 100, 200, 0.45);
+}
+
+.YAMY {
+    max-width: 620px;
+    margin: 0 auto 25px;
+}
+
+.YAMY blockquote {
+    margin: 0;
+    padding: 22px 24px;
+    background-color: rgb(248, 249, 255);
+    border-left: 5px solid rgb(95, 98, 130);
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(72, 76, 112, 0.1);
+}
+
+.YAMY blockquote p {
+    margin: 0;
+    font-style: italic;
+}
+
+.quote-footer {
+    margin-top: 10px;
+    color: rgb(78, 74, 122);
+    font-size: 15px;
+}
+
+.note-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.sticky-note {
+    width: 220px;
+    min-height: 180px;
+    padding: 20px;
+    background: #fff9cc;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sticky-note:nth-child(1) {
+    transform: rotate(-3deg);
+    background: #fff9cc;
+}
+
+.sticky-note:nth-child(2) {
+    transform: rotate(2deg);
+    background: #e6f2ff;
+}
+
+.sticky-note:nth-child(3) {
+    transform: rotate(-1.5deg);
+    background: #f2e6ff;
+}
+
+.sticky-note:nth-child(4) {
+    transform: rotate(2.5deg);
+    background: #fff0e6;
+}
+
+.sticky-note:nth-child(5) {
+    transform: rotate(-2deg);
+    background: #e6fff0;
+}
+
+.sticky-note:nth-child(6) {
+    transform: rotate(1deg);
+    background: #fff5e6;
+}
+
+.sticky-note:nth-child(7) {
+    transform: rotate(-2.2deg);
+    background: #f0f2ff;
+}
+
+.sticky-note:hover {
+    transform: rotate(0deg) scale(1.03);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+.sticky-note p {
+    font-family: "Comic Sans MS", cursive;
+    color: #222;
+    font-size: 17px;
+}
+
+.site-footer {
+    max-width: 900px;
+    margin: 22px auto 0;
+    text-align: center;
+}
+
+.site-footer p {
+    font-size: 14px;
+    color: rgb(78, 74, 122);
+    margin: 0;
+}
+
+@media (max-width: 700px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    nav ul {
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    h1 {
+        font-size: 2.15em;
+        letter-spacing: 2px;
+        margin: 30px 14px;
+    }
+
+    .content-bg {
+        padding: 30px 18px;
+    }
+
+    .project-list {
+        grid-template-columns: 1fr;
+    }
+}
