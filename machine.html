@@ -207,6 +207,7 @@
         const status = document.getElementById("status");
         const soundButton = document.getElementById("sound-button");
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const autoReturn = new URLSearchParams(window.location.search).get("mode") !== "stay";
         let audioContext;
         let soundEnabled = false;
         let hasRoared = false;
@@ -332,9 +333,11 @@
             }
         }, 2300);
 
-        window.setTimeout(() => {
-            window.location.replace("lecker1.html");
-        }, 7000);
+        if (autoReturn) {
+            window.setTimeout(() => {
+                window.location.replace("lecker1.html");
+            }, 7000);
+        }
 
         if (AudioContextClass) {
             enableSound();
