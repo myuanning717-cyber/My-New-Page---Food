@@ -41,11 +41,19 @@
             width: 190px;
             height: 180px;
             margin: 42px auto 28px;
+            padding: 0;
             border: 5px solid #24243b;
             border-radius: 48% 48% 42% 42%;
             background: #a98ae8;
             box-shadow: inset -14px -12px 0 #8769c6, 0 16px 30px #090912;
+            cursor: pointer;
+            font: inherit;
             transition: transform 350ms ease, background-color 350ms ease;
+        }
+
+        .monster:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 7px;
         }
 
         .monster::before,
@@ -137,6 +145,22 @@
             background: #4b3d70;
         }
 
+        .home-link {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 10px 20px;
+            border: 2px solid #c8b7ff;
+            border-radius: 999px;
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .home-link:hover,
+        .home-link:focus-visible {
+            background: #4b3d70;
+        }
+
         .awake .monster {
             transform: scale(1.08) rotate(-3deg);
             background: #ff795f;
@@ -194,155 +218,94 @@
 <body>
     <main id="machine">
         <h1>Sleepy Monster Machine</h1>
-        <div class="monster" aria-hidden="true">
+        <button class="monster" id="monster" type="button" aria-label="Wake the monster">
             <span class="zzz">Zzz...</span>
             <div class="eyes"><span class="eye"></span><span class="eye"></span></div>
             <div class="mouth"></div>
-        </div>
+        </button>
         <p class="status" id="status" aria-live="assertive">Shhh... The monster is fast asleep.</p>
-        <button class="sound-button" id="sound-button" type="button" hidden>Enable sound</button>
+        <p id="hint">Click the monster to wake it up.</p>
+        <button class="sound-button" id="sound-button" type="button" hidden>Play Kiki's voice</button>
+        <audio id="monster-voice" src="kiki.mp3" preload="none"></audio>
+        <a class="home-link" href="index.html">Back to Home</a>
     </main>
     <script>
         const machine = document.getElementById("machine");
+        const monster = document.getElementById("monster");
         const status = document.getElementById("status");
+        const hint = document.getElementById("hint");
         const soundButton = document.getElementById("sound-button");
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const voice = document.getElementById("monster-voice");
         const autoReturn = new URLSearchParams(window.location.search).get("mode") !== "stay";
-        let audioContext;
-        let soundEnabled = false;
-        let hasRoared = false;
-        let snoreTimer;
+        let playbackRequested = false;
+        let returnTimer;
 
-        function playSnore() {
-            if (!soundEnabled || !audioContext) return;
-
-            const oscillator = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            const now = audioContext.currentTime;
-            oscillator.type = "sine";
-            oscillator.frequency.setValueAtTime(105, now);
-            oscillator.frequency.linearRampToValueAtTime(72, now + 0.55);
-            gain.gain.setValueAtTime(0.001, now);
-            gain.gain.linearRampToValueAtTime(0.12, now + 0.12);
-            gain.gain.linearRampToValueAtTime(0.001, now + 0.75);
-            oscillator.connect(gain);
-            gain.connect(audioContext.destination);
-            oscillator.start(now);
-            oscillator.stop(now + 0.8);
-        }
-
-        function playRoar() {
-            if (!soundEnabled || hasRoared) return;
-            hasRoared = true;
-
-            const now = audioContext.currentTime;
-            const roarGain = audioContext.createGain();
-            const distortion = audioContext.createWaveShaper();
-            const curve = new Float32Array(256);
-            for (let i = 0; i < curve.length; i += 1) {
-                const x = (i * 2) / (curve.length - 1) - 1;
-                curve[i] = Math.tanh(x * 4);
-            }
-            distortion.curve = curve;
-            distortion.oversample = "4x";
-            roarGain.gain.setValueAtTime(0.8, now);
-            distortion.connect(roarGain);
-            roarGain.connect(audioContext.destination);
-
-            for (const [type, startFrequency, endFrequency, volume] of [
-                ["sawtooth", 210, 48, 0.2],
-                ["square", 105, 36, 0.08]
-            ]) {
-                const oscillator = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                oscillator.type = type;
-                oscillator.frequency.setValueAtTime(startFrequency, now);
-                oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + 0.72);
-                gain.gain.setValueAtTime(0.001, now);
-                gain.gain.linearRampToValueAtTime(volume, now + 0.06);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
-                oscillator.connect(gain);
-                gain.connect(distortion);
-                oscillator.start(now);
-                oscillator.stop(now + 0.9);
-            }
-
-            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.45, audioContext.sampleRate);
-            const noiseData = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < noiseData.length; i += 1) {
-                noiseData[i] = Math.random() * 2 - 1;
-            }
-            const noise = audioContext.createBufferSource();
-            const noiseFilter = audioContext.createBiquadFilter();
-            const noiseGain = audioContext.createGain();
-            noise.buffer = noiseBuffer;
-            noiseFilter.type = "lowpass";
-            noiseFilter.frequency.setValueAtTime(1400, now);
-            noiseGain.gain.setValueAtTime(0.001, now);
-            noiseGain.gain.linearRampToValueAtTime(0.12, now + 0.05);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(roarGain);
-            noise.start(now);
-            noise.stop(now + 0.45);
-
-            if ("speechSynthesis" in window) {
-                const shout = new SpeechSynthesisUtterance("WHAT?! You woke me up! GET OUT! NOW!");
-                shout.lang = "en-US";
-                shout.rate = 1.05;
-                shout.pitch = 0.45;
-                window.speechSynthesis.speak(shout);
-            }
-        }
-
-        async function enableSound() {
-            if (!AudioContextClass) {
-                status.textContent = "This browser does not support sound. The monster is still waking up!";
-                soundButton.hidden = true;
-                return;
-            }
-
-            try {
-                audioContext = audioContext || new AudioContextClass();
-                await audioContext.resume();
-                soundEnabled = true;
-                soundButton.hidden = true;
-                if (machine.classList.contains("awake")) {
-                    playRoar();
-                } else {
-                    playSnore();
-                }
-            } catch (error) {
-                status.textContent = "Tap Enable sound to hear me snore!";
-                soundButton.hidden = false;
-            }
-        }
-
-        soundButton.addEventListener("click", enableSound);
-
-        snoreTimer = window.setInterval(playSnore, 1200);
-        window.setTimeout(() => {
-            window.clearInterval(snoreTimer);
+        async function playKikiVoice() {
+            playbackRequested = true;
             machine.classList.add("awake");
             status.textContent = "WHAT?! YOU WOKE ME UP! GET OUT! NOW!";
-            playRoar();
-            if (!soundEnabled) {
+            hint.textContent = "Click again to hear Kiki's voice again.";
+            soundButton.hidden = true;
+            try {
+                voice.currentTime = 0;
+                await voice.play();
+            } catch (error) {
+                if (!autoReturn) {
+                    machine.classList.remove("awake");
+                }
+                status.textContent = "Kiki's audio could not play. Check that kiki.mp3 is a supported audio file.";
+                hint.textContent = "Use the button below to try the audio again.";
                 soundButton.hidden = false;
-                status.textContent += " (Tap for sound!)";
             }
-        }, 2300);
-
-        if (autoReturn) {
-            window.setTimeout(() => {
-                window.location.replace("lecker1.html");
-            }, 7000);
         }
 
-        if (AudioContextClass) {
-            enableSound();
-        } else {
-            soundButton.hidden = false;
+        function resetMonster() {
+            if (autoReturn) return;
+            machine.classList.remove("awake");
+            status.textContent = "Shhh... The monster is fast asleep.";
+            hint.textContent = "Click the monster to wake it up.";
+        }
+
+        monster.addEventListener("click", playKikiVoice);
+        soundButton.addEventListener("click", playKikiVoice);
+        voice.addEventListener("ended", resetMonster);
+        voice.addEventListener("error", () => {
+            if (playbackRequested) {
+                status.textContent = "Kiki's audio could not be loaded. Check that kiki.mp3 is a supported audio file.";
+                soundButton.hidden = false;
+            }
+        });
+        voice.addEventListener("loadedmetadata", () => {
+            if (autoReturn && Number.isFinite(voice.duration)) {
+                window.clearTimeout(returnTimer);
+                returnTimer = window.setTimeout(() => {
+                    window.location.replace("lecker1.html");
+                }, voice.duration * 1000 + 1200);
+            }
+        });
+        voice.addEventListener("ended", () => {
+            if (autoReturn) {
+                window.clearTimeout(returnTimer);
+                returnTimer = window.setTimeout(() => {
+                    window.location.replace("lecker1.html");
+                }, 1200);
+            }
+        });
+
+        if (autoReturn) {
+            window.addEventListener("load", async () => {
+                returnTimer = window.setTimeout(() => {
+                    window.location.replace("lecker1.html");
+                }, 12000);
+                try {
+                    await playKikiVoice();
+                } catch (error) {
+                    window.clearTimeout(returnTimer);
+                    returnTimer = window.setTimeout(() => {
+                        window.location.replace("lecker1.html");
+                    }, 8000);
+                }
+            }, { once: true });
         }
     </script>
 </body>
