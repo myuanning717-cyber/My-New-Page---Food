@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#151525">
+    <title>Sleepy Monster Machine</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: radial-gradient(circle at top, #45436a, #171725 70%);
+            color: #fff;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            text-align: center;
+        }
+
+        main {
+            width: min(100%, 620px);
+            padding: 36px 24px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 28px;
+            background: rgba(20, 20, 38, 0.78);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(1.8rem, 7vw, 3rem);
+        }
+
+        .monster {
+            position: relative;
+            width: 190px;
+            height: 180px;
+            margin: 42px auto 28px;
+            border: 5px solid #24243b;
+            border-radius: 48% 48% 42% 42%;
+            background: #a98ae8;
+            box-shadow: inset -14px -12px 0 #8769c6, 0 16px 30px #090912;
+            transition: transform 350ms ease, background-color 350ms ease;
+        }
+
+        .monster::before,
+        .monster::after {
+            position: absolute;
+            top: -24px;
+            width: 52px;
+            height: 52px;
+            content: "";
+            border: 5px solid #24243b;
+            border-radius: 50% 50% 0 50%;
+            background: #a98ae8;
+            z-index: -1;
+        }
+
+        .monster::before {
+            left: 12px;
+            transform: rotate(-28deg);
+        }
+
+        .monster::after {
+            right: 12px;
+            transform: rotate(28deg) scaleX(-1);
+        }
+
+        .eyes {
+            display: flex;
+            justify-content: center;
+            gap: 34px;
+            padding-top: 55px;
+        }
+
+        .eye {
+            width: 24px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: inset 0 -5px 0 #d9d5ea;
+        }
+
+        .eye::after {
+            display: block;
+            width: 9px;
+            height: 12px;
+            margin: 8px auto 0;
+            border-radius: 50%;
+            background: #24243b;
+            content: "";
+        }
+
+        .mouth {
+            width: 48px;
+            height: 15px;
+            margin: 22px auto 0;
+            border-radius: 0 0 30px 30px;
+            background: #4c2e61;
+        }
+
+        .zzz {
+            position: absolute;
+            top: -58px;
+            right: -42px;
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 800;
+            animation: float 1.3s ease-in-out infinite alternate;
+        }
+
+        .status {
+            min-height: 2.5em;
+            margin: 0;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+        }
+
+        .sound-button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            border: 2px solid #c8b7ff;
+            border-radius: 999px;
+            background: #312b4b;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sound-button:hover,
+        .sound-button:focus-visible {
+            background: #4b3d70;
+        }
+
+        .awake .monster {
+            transform: scale(1.08) rotate(-3deg);
+            background: #ff795f;
+            animation: shake 180ms ease-in-out 5;
+        }
+
+        .awake .monster::before,
+        .awake .monster::after {
+            background: #ff795f;
+        }
+
+        .awake .eye {
+            height: 20px;
+            margin-top: 4px;
+            border-radius: 50% 50% 4px 4px;
+        }
+
+        .awake .eye::after {
+            display: none;
+        }
+
+        .awake .mouth {
+            width: 66px;
+            height: 40px;
+            margin-top: 14px;
+            border: 4px solid #4c2e61;
+            border-radius: 45%;
+            background: #331e3c;
+        }
+
+        .awake .zzz {
+            display: none;
+        }
+
+        @keyframes float {
+            to { transform: translate(8px, -12px) scale(0.85); }
+        }
+
+        @keyframes shake {
+            25% { transform: scale(1.08) rotate(4deg); }
+            75% { transform: scale(1.08) rotate(-5deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main id="machine">
+        <h1>Sleepy Monster Machine</h1>
+        <div class="monster" aria-hidden="true">
+            <span class="zzz">Zzz...</span>
+            <div class="eyes"><span class="eye"></span><span class="eye"></span></div>
+            <div class="mouth"></div>
+        </div>
+        <p class="status" id="status" aria-live="assertive">Shhh... The monster is fast asleep.</p>
+        <button class="sound-button" id="sound-button" type="button" hidden>Enable sound</button>
+    </main>
+    <script>
+        const machine = document.getElementById("machine");
+        const status = document.getElementById("status");
+        const soundButton = document.getElementById("sound-button");
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioContext;
+        let soundEnabled = false;
+        let hasRoared = false;
+        let snoreTimer;
+
+        function playSnore() {
+            if (!soundEnabled || !audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const now = audioContext.currentTime;
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(105, now);
+            oscillator.frequency.linearRampToValueAtTime(72, now + 0.55);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.12);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.75);
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+            oscillator.start(now);
+            oscillator.stop(now + 0.8);
+        }
+
+        function playRoar() {
+            if (!soundEnabled || hasRoared) return;
+            hasRoared = true;
+
+            const now = audioContext.currentTime;
+            const roarGain = audioContext.createGain();
+            const distortion = audioContext.createWaveShaper();
+            const curve = new Float32Array(256);
+            for (let i = 0; i < curve.length; i += 1) {
+                const x = (i * 2) / (curve.length - 1) - 1;
+                curve[i] = Math.tanh(x * 4);
+            }
+            distortion.curve = curve;
+            distortion.oversample = "4x";
+            roarGain.gain.setValueAtTime(0.8, now);
+            distortion.connect(roarGain);
+            roarGain.connect(audioContext.destination);
+
+            for (const [type, startFrequency, endFrequency, volume] of [
+                ["sawtooth", 210, 48, 0.2],
+                ["square", 105, 36, 0.08]
+            ]) {
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(startFrequency, now);
+                oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + 0.72);
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(volume, now + 0.06);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+                oscillator.connect(gain);
+                gain.connect(distortion);
+                oscillator.start(now);
+                oscillator.stop(now + 0.9);
+            }
+
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.45, audioContext.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseData.length; i += 1) {
+                noiseData[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioContext.createBufferSource();
+            const noiseFilter = audioContext.createBiquadFilter();
+            const noiseGain = audioContext.createGain();
+            noise.buffer = noiseBuffer;
+            noiseFilter.type = "lowpass";
+            noiseFilter.frequency.setValueAtTime(1400, now);
+            noiseGain.gain.setValueAtTime(0.001, now);
+            noiseGain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(roarGain);
+            noise.start(now);
+            noise.stop(now + 0.45);
+
+            if ("speechSynthesis" in window) {
+                const shout = new SpeechSynthesisUtterance("WHAT?! You woke me up! GET OUT! NOW!");
+                shout.lang = "en-US";
+                shout.rate = 1.05;
+                shout.pitch = 0.45;
+                window.speechSynthesis.speak(shout);
+            }
+        }
+
+        async function enableSound() {
+            if (!AudioContextClass) {
+                status.textContent = "This browser does not support sound. The monster is still waking up!";
+                soundButton.hidden = true;
+                return;
+            }
+
+            try {
+                audioContext = audioContext || new AudioContextClass();
+                await audioContext.resume();
+                soundEnabled = true;
+                soundButton.hidden = true;
+                if (machine.classList.contains("awake")) {
+                    playRoar();
+                } else {
+                    playSnore();
+                }
+            } catch (error) {
+                status.textContent = "Tap Enable sound to hear me snore!";
+                soundButton.hidden = false;
+            }
+        }
+
+        soundButton.addEventListener("click", enableSound);
+
+        snoreTimer = window.setInterval(playSnore, 1200);
+        window.setTimeout(() => {
+            window.clearInterval(snoreTimer);
+            machine.classList.add("awake");
+            status.textContent = "WHAT?! YOU WOKE ME UP! GET OUT! NOW!";
+            playRoar();
+            if (!soundEnabled) {
+                soundButton.hidden = false;
+                status.textContent += " (Tap for sound!)";
+            }
+        }, 2300);
+
+        window.setTimeout(() => {
+            window.location.replace("lecker1.html");
+        }, 7000);
+
+        if (AudioContextClass) {
+            enableSound();
+        } else {
+            soundButton.hidden = false;
+        }
+    </script>
+</body>
+</html>

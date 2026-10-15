@@ -222,11 +222,15 @@ img {
 }
 
 .sticky-note {
+    display: block;
     width: 220px;
     min-height: 180px;
     padding: 20px;
     background: #fff9cc;
+    border: 0;
+    color: #222;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -267,10 +271,17 @@ img {
 
 .sticky-note:hover {
     transform: rotate(0deg) scale(1.03);
+    color: #222;
     box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.22);
 }
 
+.sticky-note:focus-visible {
+    outline: 3px solid rgb(80, 70, 145);
+    outline-offset: 5px;
+}
+
 .sticky-note p {
+    margin: 0;
     font-family: "Comic Sans MS", cursive;
     color: #222;
     font-size: 17px;
